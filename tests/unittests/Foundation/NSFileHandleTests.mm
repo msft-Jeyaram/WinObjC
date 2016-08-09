@@ -19,9 +19,11 @@
 #import <windows.h>
 #import <algorithm>
 #import "TestUtils.h"
+#import <FrameworkTestUtil.h>
 
 #define SCOPE_CLOSE_HANDLE(fileHandle) \
-_SCOPE_GUARD([fileHandle](void*) { [fileHandle closeFile]; }) \
+    \
+_SCOPE_GUARD([fileHandle](void*) { [fileHandle closeFile]; })
 
 #define SCOPE_DELETE_FILE(fileName) _SCOPE_GUARD([fileName](void*) { deleteFile(fileName); })
 
