@@ -14,8 +14,8 @@
 //
 //******************************************************************************
 
-#import <TestFramework.h>
 #import <Foundation/Foundation.h>
+#import <TestFramework.h>
 #import <cmath>
 
 #define EXPECT_ARRAY_EQUAL(a, b)                     \
@@ -25,16 +25,20 @@
         }                                            \
     } while (0, 0)
 
-#define TEST_SUBTRACT(x, y, expected)                               \
-    do {                                                            \
-        NSDecimalNumber* result = [x decimalNumberBySubtracting:y]; \
-        EXPECT_OBJCEQ(expected, result);                            \
+#define TEST_SUBTRACT(x, y, expected)                                                               \
+    do {                                                                                            \
+        NSDecimalNumber* result = [x decimalNumberBySubtracting:y];                                 \
+        NSDecimal expectedDecimalValue = [expected decimalValue];                                   \
+        NSDecimal resultDecimalValue = [result decimalValue];                                       \
+        EXPECT_TRUE(NSDecimalCompare(&expectedDecimalValue, &resultDecimalValue) == NSOrderedSame); \
     } while (0, 0)
 
-#define TEST_ADDITION(x, y, expected)                          \
-    do {                                                       \
-        NSDecimalNumber* result = [x decimalNumberByAdding:y]; \
-        EXPECT_OBJCEQ(expected, result);                       \
+#define TEST_ADDITION(x, y, expected)                                                               \
+    do {                                                                                            \
+        NSDecimalNumber* result = [x decimalNumberByAdding:y];                                      \
+        NSDecimal expectedDecimalValue = [expected decimalValue];                                   \
+        NSDecimal resultDecimalValue = [result decimalValue];                                       \
+        EXPECT_TRUE(NSDecimalCompare(&expectedDecimalValue, &resultDecimalValue) == NSOrderedSame); \
     } while (0, 0)
 
 #define VALIDATE(decimal, len, exp, isNegative, mantissa) \
@@ -277,7 +281,8 @@ TEST(NSDecimalNumber, Subtraction2) {
 }
 
 TEST(NSDecimalNumber, addition) {
-    // Note: Subtraction tests addition, since NSDecimalSubtract gets converted to NSDecimalAdd
+    // Note: Subtraction tests addition, since NSDecimalSubtract gets converted to
+    // NSDecimalAdd
     unsigned short mantissa[NSDecimalMaxSize] = { 5272, 10, 0, 0, 0, 0, 0, 0 };
     NSDecimalNumber* dNumber = [[[NSDecimalNumber alloc] initWithLongLong:6560451.0] autorelease];
     NSDecimal decimal1 = [dNumber decimalValue];
