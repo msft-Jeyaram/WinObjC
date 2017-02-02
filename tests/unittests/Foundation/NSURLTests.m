@@ -28,6 +28,11 @@ void testNSURLMethod(SEL selector, NSURL* input, id argument, NSURL* expected) {
     ASSERT_OBJCEQ_MSG(expected, actual, "FAILED: expected != actual");
 }
 
+TEST(NSURL, foobar) {
+    NSURL* testURL = [[NSURL alloc] initWithString:@"file:///usr/local/bin"];
+    NSString* re = testURL.resourceSpecifier;
+}
+
 TEST(NSURL, NSURLTests) {
     NSURL* testURL = [[NSURL alloc] initWithString:@"http://www.test.com/home/index.html?Foo#24"];
     NSURL* testURL2 = [[NSURL alloc] initWithString:@"http://www.test.com/"];
@@ -62,7 +67,7 @@ TEST(NSURL, NSURLTests) {
                     nil,
                     [[NSURL alloc] initWithString:@"http://www.test.com/home.page/asdf"]);
 
-    testNSURLMethod(@selector(URLByDeletingPathExtension), testURL7, nil, [[NSURL alloc] initWithString:@"http://www.test.com/"]);
+    testNSURLMethod(@selector(URLByDeletingPathExtension), testURL7, nil, [[NSURL alloc] initWithString:@"http://www.test.com/.foo"]);
 
     // URLByDeletingLastPathComponent
     testNSURLMethod(@selector(URLByDeletingLastPathComponent),

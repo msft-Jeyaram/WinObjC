@@ -5007,17 +5007,29 @@ CFURLRef CFURLCreateCopyDeletingPathExtension(CFAllocatorRef allocator, CFURLRef
     }
 #endif
     
+    CFStringRef lastPathComponent = NULL;
     rg = _rangeOfLastPathComponent(url);
-    if (rg.location < 0) {
+    if ( (rg.location == kCFNotFound) || ((lastPathComponent = CFStringCreateWithSubstring(allocator, url->_string, rg)) == NULL) ) {
+        // no last path component
         result = NULL;
-    } else if (rg.length && CFStringFindWithOptions(url->_string, CFSTR("."), rg, kCFCompareBackwards, &dotRg)) {
-        CFMutableStringRef newString = CFStringCreateMutableCopy(allocator, 0, url->_string);
-        dotRg.length = rg.location + rg.length - dotRg.location;
-        CFStringDelete(newString, dotRg);
-        result = _CFURLCreateWithArbitraryString(allocator, newString, url->_base);
-        CFRelease(newString);
-    } else {
-        result = (CFURLRef)CFRetain(url);
+    }
+    else {
+        // NOTE: The implementation before we switched to _CFGetPathExtensionRangesFromPathComponent deleted invalid extensions.
+        CFRange primaryExtRange;
+        _CFGetPathExtensionRangesFromPathComponent(lastPathComponent, &primaryExtRange, NULL);
+        if ( primaryExtRange.location != kCFNotFound ) {
+            CFMutableStringRef newString = CFStringCreateMutableCopy(allocator, 0, url->_string);
+            dotRg.location = rg.location + primaryExtRange.location - 1;
+            dotRg.length = primaryExtRange.length + 1;
+            CFStringDelete(newString, dotRg);
+            result = _CFURLCreateWithArbitraryString(allocator, newString, url->_base);
+            CFRelease(newString);
+        }
+        else {
+            // there is no extension to delete
+            result = (CFURLRef)CFRetain(url);
+        }
+        CFRelease(lastPathComponent);
     }
     if ( filePathURLCreated ) {
         CFRelease(url);
