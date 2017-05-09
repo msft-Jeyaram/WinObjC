@@ -121,8 +121,7 @@ CGGradientRef CGGradientRetain(CGGradientRef gradient) {
 }
 
 static inline bool __isValidGradientColorspaceModel(CGColorSpaceRef colorspace) {
-    RETURN_RESULT_IF_NULL(colorspace, false);
-
+    // Note: null colorspace is valid
     // The colorspace cannot be kCGColorSpaceModelPattern || kCGColorSpaceModelIndexed
     CGColorSpaceModel colorSpaceModel = CGColorSpaceGetModel(colorspace);
     if ((colorSpaceModel == kCGColorSpaceModelPattern) || (colorSpaceModel == kCGColorSpaceModelIndexed)) {
@@ -150,13 +149,18 @@ CGGradientRef CGGradientCreateWithColorComponents(CGColorSpaceRef colorSpace,
 
 /**
  @Status Interoperable
+ @Note Only RGB colorspace is supported, but individual colors can be of different colorspace
 */
 CGGradientRef CGGradientCreateWithColors(CGColorSpaceRef colorSpace, CFArrayRef colors, const CGFloat* locations) {
-    RETURN_NULL_IF(!colorSpace);
     RETURN_NULL_IF(!colors);
     RETURN_NULL_IF(!__isValidGradientColorspaceModel(colorSpace));
     // location can be null
-    return __CGGradient::CreateInstance(kCFAllocatorDefault, colorSpace, colors, locations);
+    static woc::StrongCF<CGColorSpaceRef> colorSpaceRGB;
+    if (!colorSpace) {
+        colorSpaceRGB = woc::MakeStrongCF<CGColorSpaceRef>(CGColorSpaceCreateDeviceRGB());
+    }
+
+    return __CGGradient::CreateInstance(kCFAllocatorDefault, colorSpace ? colorSpace : colorSpaceRGB, colors, locations);
 }
 
 const std::vector<CGFloat>& _CGGradientGetStopLocations(CGGradientRef gradient) {
